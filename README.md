@@ -6,4 +6,4 @@ Enzo Ekouevi
 Mark Greene
 Sarah Heuker
 
-Team Name: The Greenliners
+Team Name: The Green Liners

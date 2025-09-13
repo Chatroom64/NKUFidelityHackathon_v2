@@ -1,0 +1,189 @@
+<!DOCTYPE html>
+<html lang="en">
+  <link rel="icon" href="https://twemoji.maxcdn.com/v/13.1.0/72x72/1f4c8.png">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Options Visualizer</title>
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <main>
+    <h1>Stock Options Visualizer 📊</h1>
+
+    <div class="stock-desc">
+      <h2>What are Stocks?</h2>
+      <p>Stocks represent ownership in a company, giving shareholders a claim on assets and earnings.
+      Options are financial contracts that give the buyer the right, but not the obligation, to buy or sell a stock at a set price before a certain date.
+      Call options allow investors to buy shares at a fixed price, while put options allow them to sell shares at a fixed price.
+      Options are often used for hedging risk, generating income, or speculating on price movements.
+      Unlike stocks, options lose value over time due to expiration, so timing is a key factor in trading them.</p>
+    </div>
+
+    <div class="buttons">
+      <label><input type="radio" name="optionType" value="0"> Stock #1</label><br>
+      <label><input type="radio" name="optionType" value="1"> Stock #2</label><br>
+      <label><input type="radio" name="optionType" value="2"> Stock #3</label><br>
+      <label><input type="radio" name="optionType" value="3"> Stock #4</label><br>
+      <label><input type="radio" name="optionType" value="4"> Stock #5</label><br>
+    <div id="buy-sell">
+        <table style="margin: auto;">
+          <tr>
+            <td><button id="buyBtn"><h1>BUY</h1></button></td>
+            <td><button id="sellBtn"><h1>SELL</h1></button></td>
+          </tr>
+        </table>
+
+        <p id="btn-selection-value">Selected: 0</p>
+        <p id="portfolio">💵 Balance: 1000 | 📦 Holdings: 0</p>
+
+    <div class="canvas" style="width: 80%; height: 500px;">
+      <canvas id="myLineChart"></canvas>
+    </div>
+    <div id="modes">
+      <button id="light-mode"><h2>LIGHT MODE</h2></button>
+      <button id="dark-mode"><h2>DARK MODE</h2></button>
+    </div>
+
+    
+  </main>
+
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/2.9.4/Chart.js"></script>
+  <script>
+
+    let balance = 1000;   // starting money
+    let holdings = [0, 0, 0, 0, 0];  // one entry per stock
+    
+
+// Get the current price of selected stock
+function getCurrentPrice() {
+  let stock = options[intSelectedBtnValue];
+  let stockPrice = stock[stock.length - 1]; // last stock price
+  return stockPrice / 10; // option price is 1/10 of stock
+}
+
+// Update portfolio display
+function updatePortfolio() {
+  document.getElementById("portfolio").innerText =
+    `💵 Balance: ${balance.toFixed(2)} | 📦 Holdings: ${holdings}`;
+}
+
+// BUY button
+document.getElementById("buyBtn").addEventListener("click", () => {
+  let price = getCurrentPrice();
+  if (balance >= price) {
+    balance -= price;
+    holdings[intSelectedBtnValue] += 1;
+    updatePortfolio();
+  } else {
+    alert("Not enough balance to buy!");
+  }
+});
+
+//Dark mode button
+document.getElementById("dark-mode").addEventListener("click", () => {
+  document.body.style.background = "linear-gradient(135deg, #0f2027, #203a43, #2c5364)";
+  document.body.style.color = "#f0f0f0";
+});
+//Light mode button
+document.getElementById("light-mode").addEventListener("click", () => {
+  document.body.style.background = "white";
+  document.body.style.color = "black";
+});
+// SELL button
+document.getElementById("sellBtn").addEventListener("click", () => {
+  let price = getCurrentPrice();
+  if (holdings[intSelectedBtnValue] > 0) {
+    balance += price;
+    holdings[intSelectedBtnValue] -= 1;
+    updatePortfolio();
+  } else {
+    alert("You don't own any shares of this stock to sell!");
+  }
+});
+
+// Initialize portfolio display
+updatePortfolio();
+
+    const xLabels = ['January', 'February', 'March', 'April', 'May', 'June', 'July', 'August', 'September', 'October','November','December'];
+
+    const options = [
+      ["first", 65, 59, 80, 81, 56, 77, 99, 120, 155, 12, 75, 90],
+      ["second", 70, 62, 85, 78, 60, 82, 105, 110, 150, 18, 80, 95],
+      ["third", 55, 48, 75, 90, 50, 70, 95, 130, 140, 10, 65, 85],
+      ["forth", 60, 65, 82, 85, 58, 79, 100, 125, 145, 15, 72, 88],
+      ["fifth", 68, 57, 78, 88, 63, 83, 110, 135, 155, 20, 77, 92]
+    ];
+
+    let intSelectedBtnValue = 0;
+    const display = document.getElementById('btn-selection-value');
+    const ctx = document.getElementById('myLineChart').getContext('2d');
+    let myLineChart;
+
+    // Create chart for the first time
+    function loadUI(array) {
+      if (!myLineChart) {
+        myLineChart = new Chart(ctx, {
+          type: 'line',
+          data: {
+            labels: xLabels,
+            datasets: [{
+              label: array[0],
+              data: array.slice(1),
+              borderColor: 'rgb(75, 192, 192)',
+              fill: false,
+              tension: 0.1
+            }]
+          },
+          options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            scales: {
+              yAxes: [{
+                ticks: { beginAtZero: true }
+              }]
+            }
+          }
+        });
+      } else {
+        updateChart(array);
+      }
+    }
+
+    // Update chart data
+    function updateChart(array) {
+      myLineChart.data.datasets[0].data = array.slice(1);
+      myLineChart.data.datasets[0].label = array[0];
+      myLineChart.update();
+    }
+
+    // Initialize chart
+    loadUI(options[intSelectedBtnValue]);
+
+    // Radio buttons listener
+    document.querySelectorAll('input[name="optionType"]').forEach(radio => {
+      radio.addEventListener('change', () => {
+  intSelectedBtnValue = parseInt(radio.value);
+  display.innerHTML = `Selected: ${intSelectedBtnValue}`;
+  updateChart(options[intSelectedBtnValue]);
+  updatePortfolio(); // ✅ refresh display for new stock
+});
+    });
+
+    // Animate data every 5 seconds
+    setInterval(() => {
+      for (let i = 0; i < options.length; i++) {
+        let change = (Math.random() * 50) - 22;
+        // shift data
+        for (let j = 1; j < options[i].length - 1; j++) {
+          options[i][j] = options[i][j + 1];
+        }
+        options[i][options[i].length - 1] = Math.round(options[i][options[i].length - 1] + change);
+      }
+      updateChart(options[intSelectedBtnValue]);
+    }, 5000);
+
+  </script>
+</body>
+</html>
